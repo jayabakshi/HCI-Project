@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Academic Risk Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <div id="app">
+    <header>
+      <div class="header-content">
+        <div class="header-main">
+          <h1>Academic Risk Dashboard</h1>
+          <p class="subtitle">Track your attendance and assignment pressure in real-time.</p>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-grid">
+      <!-- Overall Risk Summary -->
+      <section id="overall-risk" class="card risk-card">
+        <h2>Academic Health Score</h2>
+        <div class="risk-meter-container">
+          <div id="risk-gauge" class="gauge">
+            <div class="gauge-fill"></div>
+            <div class="gauge-cover">
+              <span id="health-score">0%</span>
+            </div>
+          </div>
+          <div id="risk-status" class="status-msg">Calculating...</div>
+          <div id="risk-tips" class="tips-container"></div>
+        </div>
+      </section>
+
+      <!-- Attendance Tracking Section -->
+      <section id="attendance-section" class="card module-card">
+        <div class="section-header">
+          <h2>Attendance Safety</h2>
+          <div class="btn-group">
+            <button id="add-subject-btn" class="btn-icon" title="Add Subject">+</button>
+            <button id="simulate-skip" class="btn-secondary">Simulation Mode</button>
+          </div>
+        </div>
+        <div id="attendance-list" class="grid-list">
+          <!-- Attendance items will be injected here -->
+        </div>
+      </section>
+
+      <!-- Assignment Deadline Section -->
+      <section id="assignment-section" class="card module-card">
+        <div class="section-header">
+          <h2>Deadline Pressure</h2>
+          <div class="btn-group">
+            <button id="add-assignment-btn" class="btn-icon" title="Add Assignment">+</button>
+            <div id="pressure-badge" class="badge">Score: 0</div>
+          </div>
+        </div>
+        <div id="assignment-list" class="list-container">
+          <!-- Assignment items will be injected here -->
+        </div>
+      </section>
+
+      <!-- Real-World Integration Model Section -->
+      <section id="integration-section" class="card full-card">
+        <h2>Real-World Integration Model</h2>
+        <div class="integration-grid">
+          <div class="integration-item">
+            <h3>LMS Integration</h3>
+            <ul>
+              <li>Connects with College ERP systems.</li>
+              <li>Syncs with Moodle, Blackboard, and Google Classroom via APIs.</li>
+              <li>Real-time database sync for attendance and deadlines.</li>
+            </ul>
+          </div>
+          <div class="integration-item">
+            <h3>Faculty Dashboard</h3>
+            <ul>
+              <li>Direct attendance upload from faculty portals.</li>
+              <li>Auto-sync of coursework deadlines.</li>
+              <li>Automated warning alerts via Email/SMS.</li>
+            </ul>
+          </div>
+          <div class="integration-item">
+            <h3>Student Login System</h3>
+            <ul>
+              <li>Secure login using Registration Number.</li>
+              <li>Personalized data and risk profiles.</li>
+              <li>Role-based access (Student/Faculty/Admin).</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal Container -->
+    <div id="modal-container" class="modal-overlay hidden">
+      <div class="modal-content card">
+        <div class="modal-header">
+          <h2 id="modal-title">Edit Entry</h2>
+          <button id="modal-close" class="btn-close">&times;</button>
+        </div>
+        <div id="modal-body">
+          <!-- Form will be injected here -->
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>&copy; 2026 Academic Risk Management System</p>
+    </footer>
+  </div>
+  <script src="main.js"></script>
+</body>
+
+</html>
