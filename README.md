@@ -1,4 +1,4 @@
-Academic Risk Dashboard
+**Academic Risk Dashboard**
 
 Academic Risk Dashboard is a web-based system designed to help students monitor their academic standing through attendance tracking and assignment deadline management. The dashboard provides clear visual indicators, predictive calculations, and an overall academic health score to help students make informed decisions before issues become critical.
 
@@ -14,8 +14,8 @@ Assignment deadline pressure tracking
 
 It presents all insights in a clean, minimal, and easy-to-understand interface.
 
-Features
-1. Attendance Safety Module
+**Features**
+1. *Attendance Safety Module*
 
 Displays total classes conducted and classes attended per subject
 
@@ -39,7 +39,7 @@ Displays a “Safe Skip Counter” for quick insight
 
 Optional simulation to check updated percentage if the next class is missed
 
-2. Assignment Deadline Pressure Module
+2. *Assignment Deadline Pressure Module*
 
 Displays upcoming assignments with subject and due date
 
@@ -63,7 +63,7 @@ Deadline proximity
 
 Workload distribution
 
-3. Academic Health Score
+3. *Academic Health Score*
 
 The system combines attendance safety and deadline pressure into a single Academic Health Score, providing a clear overall risk level:
 
@@ -99,7 +99,7 @@ Data Handling: Static JSON / Local State
 
 Styling: CSS / Tailwind / Bootstrap
 
-How It Works
+**How It Works**
 
 In the current demo version:
 
@@ -109,7 +109,7 @@ The dashboard calculates attendance percentage and safe skip limits dynamically.
 
 Assignment deadlines are categorized automatically based on the current date.
 
-Real-World Integration Scope
+**Real-World Integration Scope**
 
 In a real college environment, this dashboard can be integrated with:
 
@@ -135,7 +135,7 @@ Automated email or SMS alerts
 
 Real-time attendance updates
 
-Purpose of the Project
+**Purpose of the Project**
 
 This project demonstrates:
 
