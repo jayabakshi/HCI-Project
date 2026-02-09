@@ -5,12 +5,12 @@
     --card-bg: #ffffff;
     --text-main: #1e293b;
     --text-muted: #64748b;
-    --success: #10b981;
-    --success-soft: #ecfdf5;
-    --warning: #f59e0b;
-    --warning-soft: #fffbeb;
-    --danger: #ef4444;
-    --danger-soft: #fef2f2;
+    --success: #4CAF50;
+    --success-soft: #edf7ed;
+    --warning: #FFC107;
+    --warning-soft: #fff8e1;
+    --danger: #F44336;
+    --danger-soft: #fdebda;
     --border-color: #e2e8f0;
     --radius: 12px;
     --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -290,9 +290,14 @@ h2 {
 }
 
 .subject-info {
+    margin-bottom: 1rem;
+}
+
+.subject-header-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 0.75rem;
+    align-items: center;
+    margin-bottom: 0.5rem;
 }
 
 .subject-name {
@@ -317,7 +322,7 @@ h2 {
 .progress-bar-fill {
     height: 100%;
     width: 0;
-    transition: width 1.5s cubic-bezier(0.65, 0, 0.35, 1), background 0.8s ease;
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.6s ease;
 }
 
 .insight-text {
@@ -491,7 +496,40 @@ input:focus {
     box-shadow: 0 0 0 3px var(--primary-soft);
 }
 
-/* Action Tags */
+.btn-skip {
+    background: var(--primary-soft);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-skip:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-reset {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-reset:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
 .btn-delete {
     opacity: 0;
     color: var(--danger);
