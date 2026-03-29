@@ -21,7 +21,9 @@
         <div class="header-main">
           <h1>Academic Risk Dashboard</h1>
           <p class="subtitle">Track your attendance and assignment pressure in real-time.</p>
+          <div id="quote-banner" class="quote-banner"></div>
         </div>
+        <button id="dark-mode-toggle" class="btn-icon header-btn">🌙</button>
       </div>
     </header>
 
@@ -37,6 +39,7 @@
             </div>
           </div>
           <div id="risk-status" class="status-msg">Calculating...</div>
+          <div id="study-streak" class="streak-tracker">🔥 Study Streak: <span id="streak-days">0</span> days</div>
           <div id="risk-tips" class="tips-container"></div>
         </div>
       </section>
@@ -63,33 +66,39 @@
         </div>
       </section>
 
-      <!-- Real-World Integration Model Section -->
-      <section id="integration-section" class="card full-card">
-        <h2>Real-World Integration Model</h2>
-        <div class="integration-grid">
-          <div class="integration-item">
-            <h3>LMS Integration</h3>
-            <ul>
-              <li>Connects with College ERP systems.</li>
-              <li>Syncs with Moodle, Blackboard, and Google Classroom via APIs.</li>
-              <li>Real-time database sync for attendance and deadlines.</li>
-            </ul>
+      <!-- Pandora Study Session -->
+      <section id="pandora-section" class="card full-card">
+        <h2>🎧 Pandora Study Session</h2>
+        <div class="pandora-container">
+          <div class="pandora-timer-box">
+            <div id="pandora-timer" class="circular-timer">
+              <span id="pandora-time-display">25:00</span>
+              <span id="pandora-mode-display" class="timer-mode">Focus</span>
+            </div>
+            <div class="pandora-controls">
+              <button id="pandora-start" class="btn-icon">▶</button>
+              <button id="pandora-pause" class="btn-icon">⏸</button>
+              <button id="pandora-reset" class="btn-icon">🔄</button>
+            </div>
           </div>
-          <div class="integration-item">
-            <h3>Faculty Dashboard</h3>
-            <ul>
-              <li>Direct attendance upload from faculty portals.</li>
-              <li>Auto-sync of coursework deadlines.</li>
-              <li>Automated warning alerts via Email/SMS.</li>
-            </ul>
-          </div>
-          <div class="integration-item">
-            <h3>Student Login System</h3>
-            <ul>
-              <li>Secure login using Registration Number.</li>
-              <li>Personalized data and risk profiles.</li>
-              <li>Role-based access (Student/Faculty/Admin).</li>
-            </ul>
+          <div class="pandora-sidebar">
+            <div class="pandora-goal-box">
+              <label for="pandora-goal-input">Daily Target:</label>
+              <div class="goal-input-row">
+                <input type="number" id="pandora-goal-input" min="1" value="4">
+                <button id="pandora-set-goal" class="btn-secondary">Set</button>
+              </div>
+              <div class="goal-progress-bg">
+                <div id="goal-progress-fill" class="goal-progress-fill" style="width: 0%"></div>
+              </div>
+              <div class="goal-text"><span id="goal-completed">0</span> / <span id="goal-total">4</span> sessions</div>
+            </div>
+            <div class="pandora-log-box">
+              <h3>Session Log</h3>
+              <div id="pandora-log" class="pandora-log-list">
+                <!-- Log entries injected here -->
+              </div>
+            </div>
           </div>
         </div>
       </section>

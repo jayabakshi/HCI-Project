@@ -164,6 +164,7 @@ function renderAssignments() {
 
         const item = document.createElement('div');
         item.className = `assignment-item border-${color}`;
+        if (cat === 'overdue' || cat === 'today') item.classList.add('pulse-urgent');
         item.style.borderLeftColor = `var(--${color === 'safe' ? 'success' : color === 'danger' ? 'danger' : 'warning'})`;
         item.innerHTML = `
             <div class="assignment-info">
@@ -201,6 +202,24 @@ function renderOverallRisk() {
         fill.style.transform = `rotate(${(rScore / 100) * 180}deg)`;
         fill.style.backgroundColor = `var(--${status.class === 'safe' ? 'success' : status.class === 'danger' ? 'danger' : 'warning'})`;
     }
+
+    if (rScore > 85 && !window.confettiFired) {
+        window.confettiFired = true;
+        fireConfetti();
+    }
+}
+
+// Confetti logic
+function fireConfetti() {
+    for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.animationDuration = (Math.random() * 2 + 3) + 's';
+        confetti.style.backgroundColor = ['#f2d74e', '#95c3de', '#ff9a91', '#4caf50'][Math.floor(Math.random() * 4)];
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 5000);
+    }
 }
 
 function updateDashboard() {
@@ -209,11 +228,182 @@ function updateDashboard() {
     renderOverallRisk();
 }
 
+// --- Dashboard Extra Features ---
+function initQuotes() {
+    const quotes = [
+        "\"The secret of getting ahead is getting started.\" - Mark Twain",
+        "\"You don't have to be great to start, but you have to start to be great.\" - Zig Ziglar",
+        "\"Education is the most powerful weapon which you can use to change the world.\" - Nelson Mandela",
+        "\"The beautiful thing about learning is that no one can take it away from you.\" - B.B. King",
+        "\"Success is the sum of small efforts, repeated day in and day out.\" - Robert Collier",
+        "\"There are no shortcuts to any place worth going.\" - Beverly Sills",
+        "\"It is not in the stars to hold our destiny but in ourselves.\" - William Shakespeare",
+        "\"If you fail, never give up because FAIL means First Attempt In Learning.\" - A.P.J. Abdul Kalam",
+        "\"Anyone who has never made a mistake has never tried anything new.\" - Albert Einstein",
+        "\"Start where you are. Use what you have. Do what you can.\" - Arthur Ashe"
+    ];
+    let qIndex = 0;
+    const banner = document.getElementById('quote-banner');
+    if (!banner) return;
+    banner.textContent = quotes[0];
+    setTimeout(() => banner.classList.add('fade-in'), 100);
+
+    setInterval(() => {
+        banner.classList.remove('fade-in');
+        setTimeout(() => {
+            qIndex = (qIndex + 1) % quotes.length;
+            banner.textContent = quotes[qIndex];
+            banner.classList.add('fade-in');
+        }, 800);
+    }, 8000);
+}
+
+function initDarkMode() {
+    const toggleBtn = document.getElementById('dark-mode-toggle');
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        if (toggleBtn) toggleBtn.textContent = '☀️';
+    }
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const darkActive = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', darkActive);
+            toggleBtn.textContent = darkActive ? '☀️' : '🌙';
+        });
+    }
+}
+
+function initStreak() {
+    const today = new Date().toDateString();
+    let streak = parseInt(localStorage.getItem('studyStreak') || '0', 10);
+    const lastVisit = localStorage.getItem('lastVisitDate');
+
+    if (lastVisit) {
+        const lastDate = new Date(lastVisit);
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (lastDate.toDateString() === yesterday.toDateString()) {
+            streak++; // Consecutive day
+        } else if (lastDate.toDateString() !== today) {
+            streak = 1; // Missed a day
+        }
+    } else {
+        streak = 1;
+    }
+
+    localStorage.setItem('studyStreak', streak);
+    localStorage.setItem('lastVisitDate', today);
+    const sEl = document.getElementById('streak-days');
+    if (sEl) sEl.textContent = streak;
+}
+
+// --- Pandora Timer Logic ---
+let pandoraInterval;
+let pandoraTime = 25 * 60; // 25 minutes
+let isPandoraRunning = false;
+let pandoraMode = 'focus'; // 'focus' or 'break'
+let sessionsCompleted = 0;
+let dailyGoal = 4;
+
+function formatTime(seconds) {
+    const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const s = (seconds % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+}
+
+function updatePandoraDisplay() {
+    document.getElementById('pandora-time-display').textContent = formatTime(pandoraTime);
+    const modeEl = document.getElementById('pandora-mode-display');
+    modeEl.textContent = pandoraMode === 'focus' ? 'Focus Mode' : 'Short Break';
+    const timerCircle = document.getElementById('pandora-timer');
+    if (pandoraMode === 'break') timerCircle.classList.add('break-mode');
+    else timerCircle.classList.remove('break-mode');
+    
+    // Update goal progress
+    document.getElementById('goal-completed').textContent = sessionsCompleted;
+    document.getElementById('goal-total').textContent = dailyGoal;
+    const progress = Math.min((sessionsCompleted / dailyGoal) * 100, 100);
+    document.getElementById('goal-progress-fill').style.width = progress + '%';
+}
+
+function logSession(durationMinutes) {
+    const logList = document.getElementById('pandora-log');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    entry.textContent = `✅ Session ${sessionsCompleted} — ${durationMinutes} min completed at ${timeString}`;
+    logList.prepend(entry);
+}
+
+function startPandora() {
+    if (isPandoraRunning) return;
+    isPandoraRunning = true;
+    pandoraInterval = setInterval(() => {
+        pandoraTime--;
+        updatePandoraDisplay();
+        if (pandoraTime <= 0) {
+            clearInterval(pandoraInterval);
+            isPandoraRunning = false;
+            if (pandoraMode === 'focus') {
+                sessionsCompleted++;
+                logSession(25);
+                pandoraMode = 'break';
+                pandoraTime = 5 * 60;
+                updatePandoraDisplay();
+                alert('Focus session complete! Time for a 5-minute break.');
+            } else {
+                pandoraMode = 'focus';
+                pandoraTime = 25 * 60;
+                updatePandoraDisplay();
+                alert('Break over! Ready to focus again?');
+            }
+        }
+    }, 1000);
+}
+
+function pausePandora() {
+    clearInterval(pandoraInterval);
+    isPandoraRunning = false;
+}
+
+function resetPandora() {
+    clearInterval(pandoraInterval);
+    isPandoraRunning = false;
+    pandoraTime = pandoraMode === 'focus' ? 25 * 60 : 5 * 60;
+    updatePandoraDisplay();
+}
+
+function initPandora() {
+    const goalInput = document.getElementById('pandora-goal-input');
+    const setGoalBtn = document.getElementById('pandora-set-goal');
+    
+    setGoalBtn.addEventListener('click', () => {
+        const val = parseInt(goalInput.value, 10);
+        if (val > 0) {
+            dailyGoal = val;
+            updatePandoraDisplay();
+        }
+    });
+
+    document.getElementById('pandora-start').addEventListener('click', startPandora);
+    document.getElementById('pandora-pause').addEventListener('click', pausePandora);
+    document.getElementById('pandora-reset').addEventListener('click', resetPandora);
+    
+    updatePandoraDisplay();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     updateDashboard();
+    initQuotes();
+    initDarkMode();
+    initStreak();
+    initPandora();
 
     document.getElementById('reset-simulation').addEventListener('click', () => {
         subjects = JSON.parse(JSON.stringify(INITIAL_DATA.subjects));
+        window.confettiFired = false;
         updateDashboard();
     });
 });

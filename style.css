@@ -18,6 +18,15 @@
     --font-heading: 'Outfit', sans-serif;
 }
 
+body.dark-mode {
+    --bg-color: #0f172a;
+    --card-bg: #1e293b;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    --primary-soft: #312e81;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;
@@ -41,6 +50,23 @@ body {
 header {
     margin-bottom: 3rem;
     text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    background: rgba(var(--bg-color-rgb, 248, 250, 252), 0.85); /* fallback rgba */
+    padding-top: 2rem; /* Add padding for sticky */
+    margin-top: -2rem; /* Offset padding */
+    padding-bottom: 1rem;
+}
+body.dark-mode header {
+    background: rgba(15, 23, 42, 0.85);
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 h1 {
@@ -55,9 +81,39 @@ h1 {
     margin-bottom: 3rem;
 }
 
+
 .subtitle {
     color: var(--text-muted);
     font-size: 1.1rem;
+}
+
+.quote-banner {
+    margin-top: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--primary-soft);
+    border-left: 4px solid var(--primary);
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-style: italic;
+    color: var(--text-main);
+    opacity: 0;
+    transform: translateY(5px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    max-width: 600px;
+}
+.quote-banner.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.header-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+.header-btn:hover {
+    background: var(--border-color);
+    color: var(--text-main);
 }
 
 .dashboard-grid {
@@ -169,6 +225,20 @@ h2 {
     font-weight: 700;
     font-size: 1.25rem;
     letter-spacing: -0.01em;
+}
+
+.streak-tracker {
+    margin-top: 0.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #f97316; /* Orange for fire */
+    background: #ffedd5;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+}
+body.dark-mode .streak-tracker {
+    background: #431407;
+    color: #fdba74;
 }
 
 .tips-container {
@@ -634,21 +704,187 @@ input:focus {
 
 /* UI Feedback */
 @keyframes pulse-red {
-    0% {
-        transform: scale(1);
-    }
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); background-color: #fff1f2; }
+    100% { transform: scale(1); }
+}
 
-    50% {
-        transform: scale(1.02);
-        background-color: #fff1f2;
-    }
-
-    100% {
-        transform: scale(1);
-    }
+@keyframes pulse-red-dark {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); background-color: #4c1d95; }
+    100% { transform: scale(1); }
 }
 
 .simulating {
     animation: pulse-red 2s infinite;
     border-color: var(--danger) !important;
+}
+
+body.dark-mode .simulating {
+    animation: pulse-red-dark 2s infinite;
+}
+
+.pulse-urgent {
+    animation: pulse-urgent 2s infinite;
+}
+@keyframes pulse-urgent {
+    0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+}
+
+/* Pandora Section */
+.pandora-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+@media (max-width: 900px) {
+    .pandora-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.pandora-timer-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-soft);
+    padding: 2.5rem;
+    border-radius: 16px;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.circular-timer {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 8px solid var(--primary);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+    transition: border-color 0.5s;
+}
+.circular-timer.break-mode {
+    border-color: var(--success);
+}
+#pandora-time-display {
+    font-size: 3.5rem;
+    font-weight: 800;
+    font-family: var(--font-heading);
+    color: var(--text-main);
+    line-height: 1;
+}
+.timer-mode {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.pandora-controls {
+    display: flex;
+    gap: 1rem;
+}
+.pandora-controls .btn-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    border-radius: 50%;
+}
+
+.pandora-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.pandora-goal-box {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+}
+.goal-input-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+.goal-input-row input {
+    width: 80px;
+}
+.goal-progress-bg {
+    height: 12px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+body.dark-mode .goal-progress-bg { background: #334155; }
+.goal-progress-fill {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.5s ease;
+}
+.goal-text {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.pandora-log-box {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    flex-grow: 1;
+    max-height: 250px;
+    display: flex;
+    flex-direction: column;
+}
+.pandora-log-box h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+}
+.pandora-log-list {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.log-entry {
+    font-size: 0.9rem;
+    color: var(--text-main);
+    background: #f8fafc;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border-left: 3px solid var(--success);
+}
+body.dark-mode .log-entry {
+    background: #0f172a;
+}
+
+/* Confetti */
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background-color: #f2d74e;
+    z-index: 1000;
+    pointer-events: none;
+    animation: fall linear forwards;
+}
+@keyframes fall {
+    0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
