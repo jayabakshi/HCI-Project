@@ -41,10 +41,11 @@ function initAuth() {
         formLogin.classList.remove('active');
     });
 
-    document.getElementById('btn-login').addEventListener('click', () => {
+    formLogin.addEventListener('submit', (e) => {
+        e.preventDefault();
         const email = document.getElementById('login-email').value;
         const pass = document.getElementById('login-password').value;
-        if (!email || !pass) return alert('Please enter both email and password.');
+        if (!email || !pass) return; // Handled by native required attribute
         
         // Simulate Login
         const user = { name: email.split('@')[0], email };
@@ -52,10 +53,11 @@ function initAuth() {
         startSession(user);
     });
 
-    document.getElementById('btn-register').addEventListener('click', () => {
+    formRegister.addEventListener('submit', (e) => {
+        e.preventDefault();
         const name = document.getElementById('reg-name').value;
         const email = document.getElementById('reg-email').value;
-        if (!name || !email) return alert('Please fill all required fields.');
+        if (!name || !email) return; // Handled by native required attribute
         
         // Simulate Register
         const user = { name, email };

@@ -31,21 +31,21 @@
         <p class="auth-tagline">Your academic companion. Stay on track.</p>
         <div class="card auth-card">
           <div class="auth-tabs">
-            <button id="tab-login" class="auth-tab active">Login</button>
-            <button id="tab-register" class="auth-tab">Register</button>
+            <button type="button" id="tab-login" class="auth-tab active">Login</button>
+            <button type="button" id="tab-register" class="auth-tab">Register</button>
           </div>
-          <div id="form-login" class="auth-form active">
+          <form id="form-login" class="auth-form active">
             <input type="email" id="login-email" class="auth-input" placeholder="Email" required />
             <input type="password" id="login-password" class="auth-input" placeholder="Password" required />
-            <button id="btn-login" class="btn-primary auth-submit">Login</button>
-          </div>
-          <div id="form-register" class="auth-form hidden">
+            <button type="submit" id="btn-login" class="btn-primary auth-submit">Login</button>
+          </form>
+          <form id="form-register" class="auth-form hidden">
             <input type="text" id="reg-name" class="auth-input" placeholder="Full Name" required />
             <input type="email" id="reg-email" class="auth-input" placeholder="Email" required />
             <input type="text" id="reg-number" class="auth-input" placeholder="Register Number" required />
             <input type="password" id="reg-password" class="auth-input" placeholder="Password" required />
-            <button id="btn-register" class="btn-primary auth-submit">Register</button>
-          </div>
+            <button type="submit" id="btn-register" class="btn-primary auth-submit">Register</button>
+          </form>
           <p class="auth-demo-text">Demo mode — no backend needed. Just enter any details.</p>
         </div>
       </div>
