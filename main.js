@@ -3,6 +3,79 @@
  * Optimized for per-subject simulation and stability.
  */
 
+// --- SPA Routing ---
+function navigateTo(pageId) {
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+        page.classList.add('hidden');
+    });
+    const target = document.getElementById(pageId);
+    if (target) {
+        target.classList.remove('hidden');
+        target.classList.add('active');
+    }
+}
+
+// --- Auth Logic ---
+function initAuth() {
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const formLogin = document.getElementById('form-login');
+    const formRegister = document.getElementById('form-register');
+
+    tabLogin.addEventListener('click', () => {
+        tabLogin.classList.add('active');
+        tabRegister.classList.remove('active');
+        formLogin.classList.add('active');
+        formLogin.classList.remove('hidden');
+        formRegister.classList.add('hidden');
+        formRegister.classList.remove('active');
+    });
+
+    tabRegister.addEventListener('click', () => {
+        tabRegister.classList.add('active');
+        tabLogin.classList.remove('active');
+        formRegister.classList.add('active');
+        formRegister.classList.remove('hidden');
+        formLogin.classList.add('hidden');
+        formLogin.classList.remove('active');
+    });
+
+    document.getElementById('btn-login').addEventListener('click', () => {
+        const email = document.getElementById('login-email').value;
+        const pass = document.getElementById('login-password').value;
+        if (!email || !pass) return alert('Please enter both email and password.');
+        
+        // Simulate Login
+        const user = { name: email.split('@')[0], email };
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        startSession(user);
+    });
+
+    document.getElementById('btn-register').addEventListener('click', () => {
+        const name = document.getElementById('reg-name').value;
+        const email = document.getElementById('reg-email').value;
+        if (!name || !email) return alert('Please fill all required fields.');
+        
+        // Simulate Register
+        const user = { name, email };
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        startSession(user);
+    });
+
+    document.getElementById('nav-logout').addEventListener('click', () => {
+        localStorage.removeItem('currentUser');
+        navigateTo('page-auth');
+    });
+}
+
+function startSession(user) {
+    document.getElementById('user-greeting').textContent = `👤 ${user.name}`;
+    navigateTo('page-dashboard');
+    updateDashboard(); // Refresh dash
+}
+
+
 // --- Logic: Attendance ---
 const calculateAttendance = (attended, total) => {
     if (total === 0) return 0;
@@ -16,7 +89,7 @@ const getAttendanceColor = (percentage) => {
 };
 
 const calculateSafeSkips = (attended, total, threshold = 0.75) => {
-    if (total === 0) return 3; // Default buffer for new subjects
+    if (total === 0) return 3;
     const maxPossibleTotal = Math.floor(attended / threshold);
     const skips = maxPossibleTotal - total;
     return Math.max(0, skips);
@@ -82,7 +155,6 @@ const getRecommendations = (attendanceScore, pressureScore) => {
 };
 
 // --- Logic: Storage & Data ---
-const STORAGE_KEYS = { SUBJECTS: 'academic_dashboard_subjects', ASSIGNMENTS: 'academic_dashboard_assignments' };
 const INITIAL_DATA = {
     subjects: [
         { id: 1, name: 'Computer Networks', attended: 32, total: 40 },
@@ -98,7 +170,6 @@ const INITIAL_DATA = {
     ]
 };
 
-// --- Initial Load Logic ---
 let subjects = JSON.parse(JSON.stringify(INITIAL_DATA.subjects));
 let assignments = INITIAL_DATA.assignments;
 
@@ -135,7 +206,6 @@ function renderAttendance() {
         list.appendChild(item);
     });
 
-    // Wire up skip buttons
     list.querySelectorAll('.btn-skip').forEach(btn => {
         btn.onclick = () => {
             const id = parseInt(btn.dataset.id);
@@ -228,19 +298,13 @@ function updateDashboard() {
     renderOverallRisk();
 }
 
-// --- Dashboard Extra Features ---
+// --- Extra Features ---
 function initQuotes() {
     const quotes = [
         "\"The secret of getting ahead is getting started.\" - Mark Twain",
         "\"You don't have to be great to start, but you have to start to be great.\" - Zig Ziglar",
         "\"Education is the most powerful weapon which you can use to change the world.\" - Nelson Mandela",
-        "\"The beautiful thing about learning is that no one can take it away from you.\" - B.B. King",
-        "\"Success is the sum of small efforts, repeated day in and day out.\" - Robert Collier",
-        "\"There are no shortcuts to any place worth going.\" - Beverly Sills",
-        "\"It is not in the stars to hold our destiny but in ourselves.\" - William Shakespeare",
-        "\"If you fail, never give up because FAIL means First Attempt In Learning.\" - A.P.J. Abdul Kalam",
-        "\"Anyone who has never made a mistake has never tried anything new.\" - Albert Einstein",
-        "\"Start where you are. Use what you have. Do what you can.\" - Arthur Ashe"
+        "\"The beautiful thing about learning is that no one can take it away from you.\" - B.B. King"
     ];
     let qIndex = 0;
     const banner = document.getElementById('quote-banner');
@@ -254,7 +318,7 @@ function initQuotes() {
             qIndex = (qIndex + 1) % quotes.length;
             banner.textContent = quotes[qIndex];
             banner.classList.add('fade-in');
-        }, 800);
+        }, 400); // 0.4s matches the slideInLeft animation
     }, 8000);
 }
 
@@ -288,9 +352,9 @@ function initStreak() {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         if (lastDate.toDateString() === yesterday.toDateString()) {
-            streak++; // Consecutive day
+            streak++; 
         } else if (lastDate.toDateString() !== today) {
-            streak = 1; // Missed a day
+            streak = 1; 
         }
     } else {
         streak = 1;
@@ -300,7 +364,10 @@ function initStreak() {
     localStorage.setItem('lastVisitDate', today);
     const sEl = document.getElementById('streak-days');
     if (sEl) sEl.textContent = streak;
+    const pEl = document.getElementById('stat-streak-pandora');
+    if (pEl) pEl.textContent = streak;
 }
+
 
 // --- Pandora Timer Logic ---
 let pandoraInterval;
@@ -320,9 +387,19 @@ function updatePandoraDisplay() {
     document.getElementById('pandora-time-display').textContent = formatTime(pandoraTime);
     const modeEl = document.getElementById('pandora-mode-display');
     modeEl.textContent = pandoraMode === 'focus' ? 'Focus Mode' : 'Short Break';
-    const timerCircle = document.getElementById('pandora-timer');
+    
+    const timerCircle = document.getElementById('pandora-hero-timer');
     if (pandoraMode === 'break') timerCircle.classList.add('break-mode');
     else timerCircle.classList.remove('break-mode');
+    
+    // Conic gradient percentage update
+    const totalTime = pandoraMode === 'focus' ? 25 * 60 : 5 * 60;
+    const perc = (pandoraTime / totalTime) * 100;
+    timerCircle.style.setProperty('--timer-pct', `${perc}%`);
+    
+    // Stats update
+    document.getElementById('stat-sessions').textContent = sessionsCompleted;
+    document.getElementById('stat-focus-time').textContent = sessionsCompleted * 25;
     
     // Update goal progress
     document.getElementById('goal-completed').textContent = sessionsCompleted;
@@ -336,7 +413,7 @@ function logSession(durationMinutes) {
     const entry = document.createElement('div');
     entry.className = 'log-entry';
     const timeString = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    entry.textContent = `✅ Session ${sessionsCompleted} — ${durationMinutes} min completed at ${timeString}`;
+    entry.textContent = `Completed ${durationMinutes} min session at ${timeString}`;
     logList.prepend(entry);
 }
 
@@ -352,14 +429,10 @@ function startPandora() {
             if (pandoraMode === 'focus') {
                 sessionsCompleted++;
                 logSession(25);
-                pandoraMode = 'break';
-                pandoraTime = 5 * 60;
-                updatePandoraDisplay();
+                setPandoraMode('break');
                 alert('Focus session complete! Time for a 5-minute break.');
             } else {
-                pandoraMode = 'focus';
-                pandoraTime = 25 * 60;
-                updatePandoraDisplay();
+                setPandoraMode('focus');
                 alert('Break over! Ready to focus again?');
             }
         }
@@ -378,27 +451,54 @@ function resetPandora() {
     updatePandoraDisplay();
 }
 
-function initPandora() {
-    const goalInput = document.getElementById('pandora-goal-input');
-    const setGoalBtn = document.getElementById('pandora-set-goal');
+function setPandoraMode(mode) {
+    pandoraMode = mode;
+    pandoraTime = mode === 'focus' ? 25 * 60 : 5 * 60;
     
-    setGoalBtn.addEventListener('click', () => {
+    const mFocus = document.getElementById('mode-focus');
+    const mBreak = document.getElementById('mode-break');
+    
+    if (mode === 'focus') {
+        mFocus.classList.add('active');
+        mBreak.classList.remove('active');
+    } else {
+        mBreak.classList.add('active');
+        mFocus.classList.remove('active');
+    }
+    
+    pausePandora();
+    updatePandoraDisplay();
+}
+
+function initPandora() {
+    // Navigations
+    document.getElementById('nav-pandora').addEventListener('click', () => navigateTo('page-pandora'));
+    document.getElementById('nav-back-dashboard').addEventListener('click', () => navigateTo('page-dashboard'));
+
+    // Controls
+    document.getElementById('pandora-start').addEventListener('click', startPandora);
+    document.getElementById('pandora-pause').addEventListener('click', pausePandora);
+    document.getElementById('pandora-reset').addEventListener('click', resetPandora);
+    
+    // Specific mode toggles
+    document.getElementById('mode-focus').addEventListener('click', () => setPandoraMode('focus'));
+    document.getElementById('mode-break').addEventListener('click', () => setPandoraMode('break'));
+
+    // Goal
+    const goalInput = document.getElementById('pandora-goal-input');
+    document.getElementById('pandora-set-goal').addEventListener('click', () => {
         const val = parseInt(goalInput.value, 10);
         if (val > 0) {
             dailyGoal = val;
             updatePandoraDisplay();
         }
     });
-
-    document.getElementById('pandora-start').addEventListener('click', startPandora);
-    document.getElementById('pandora-pause').addEventListener('click', pausePandora);
-    document.getElementById('pandora-reset').addEventListener('click', resetPandora);
     
     updatePandoraDisplay();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    updateDashboard();
+    initAuth();
     initQuotes();
     initDarkMode();
     initStreak();
@@ -409,4 +509,12 @@ document.addEventListener('DOMContentLoaded', () => {
         window.confettiFired = false;
         updateDashboard();
     });
+
+    // Check auth cache
+    const savedUser = localStorage.getItem('currentUser');
+    if (savedUser) {
+        startSession(JSON.parse(savedUser));
+    } else {
+        navigateTo('page-auth');
+    }
 });

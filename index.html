@@ -16,110 +16,189 @@
 
 <body>
   <div id="app">
-    <header>
-      <div class="header-content">
-        <div class="header-main">
-          <h1>Academic Risk Dashboard</h1>
-          <p class="subtitle">Track your attendance and assignment pressure in real-time.</p>
-          <div id="quote-banner" class="quote-banner"></div>
-        </div>
-        <button id="dark-mode-toggle" class="btn-icon header-btn">🌙</button>
+    <!-- Page 1: Auth -->
+    <div id="page-auth" class="page active">
+      <div class="auth-bg-animation">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
       </div>
-    </header>
-
-    <main class="dashboard-grid">
-      <!-- Overall Risk Summary -->
-      <section id="overall-risk" class="card risk-card">
-        <h2>Academic Health Score</h2>
-        <div class="risk-meter-container">
-          <div id="risk-gauge" class="gauge">
-            <div class="gauge-fill"></div>
-            <div class="gauge-cover">
-              <span id="health-score">0%</span>
-            </div>
+      <div class="auth-center">
+        <h1 class="auth-title">🎓 Academic Risk Dashboard</h1>
+        <p class="auth-tagline">Your academic companion. Stay on track.</p>
+        <div class="card auth-card">
+          <div class="auth-tabs">
+            <button id="tab-login" class="auth-tab active">Login</button>
+            <button id="tab-register" class="auth-tab">Register</button>
           </div>
-          <div id="risk-status" class="status-msg">Calculating...</div>
-          <div id="study-streak" class="streak-tracker">🔥 Study Streak: <span id="streak-days">0</span> days</div>
-          <div id="risk-tips" class="tips-container"></div>
+          <div id="form-login" class="auth-form active">
+            <input type="email" id="login-email" class="auth-input" placeholder="Email" required />
+            <input type="password" id="login-password" class="auth-input" placeholder="Password" required />
+            <button id="btn-login" class="btn-primary auth-submit">Login</button>
+          </div>
+          <div id="form-register" class="auth-form hidden">
+            <input type="text" id="reg-name" class="auth-input" placeholder="Full Name" required />
+            <input type="email" id="reg-email" class="auth-input" placeholder="Email" required />
+            <input type="text" id="reg-number" class="auth-input" placeholder="Register Number" required />
+            <input type="password" id="reg-password" class="auth-input" placeholder="Password" required />
+            <button id="btn-register" class="btn-primary auth-submit">Register</button>
+          </div>
+          <p class="auth-demo-text">Demo mode — no backend needed. Just enter any details.</p>
         </div>
-      </section>
+      </div>
+    </div>
 
-      <!-- Attendance Tracking Section -->
-      <section id="attendance-section" class="card module-card">
-        <div class="section-header">
-          <h2>Attendance Safety</h2>
-          <button id="reset-simulation" class="btn-reset">Reset Simulation</button>
+    <!-- Page 2: Dashboard -->
+    <div id="page-dashboard" class="page hidden">
+      <header>
+        <div class="header-content">
+          <div class="header-main">
+            <h1>Academic Risk Dashboard</h1>
+            <p class="subtitle">Track your attendance and assignment pressure in real-time.</p>
+            <div id="quote-banner" class="quote-banner"></div>
+          </div>
+          <div class="header-actions">
+            <span id="user-greeting" class="user-greeting">👤 Guest</span>
+            <button id="nav-pandora" class="btn-secondary nav-btn">🎧 Pandora</button>
+            <button id="dark-mode-toggle" class="btn-icon header-btn">🌙</button>
+            <button id="nav-logout" class="btn-reset">Logout</button>
+          </div>
         </div>
-        <div id="attendance-list" class="grid-list">
-          <!-- Attendance items will be injected here -->
-        </div>
-      </section>
+      </header>
 
-      <!-- Assignment Deadline Section -->
-      <section id="assignment-section" class="card module-card">
-        <div class="section-header">
-          <h2>Deadline Pressure</h2>
-          <div id="pressure-badge" class="badge">Score: 0</div>
-        </div>
-        <div id="assignment-list" class="list-container">
-          <!-- Assignment items will be injected here -->
-        </div>
-      </section>
+      <main class="dashboard-grid">
+        <!-- Overall Risk Summary -->
+        <section id="overall-risk" class="card risk-card">
+          <h2>Academic Health Score</h2>
+          <div class="risk-meter-container">
+            <div id="risk-gauge" class="gauge">
+              <div class="gauge-fill"></div>
+              <div class="gauge-cover">
+                <span id="health-score">0%</span>
+              </div>
+            </div>
+            <div id="risk-status" class="status-msg">Calculating...</div>
+            <div id="study-streak" class="streak-tracker">🔥 Study Streak: <span id="streak-days">0</span> days</div>
+            <div id="risk-tips" class="tips-container"></div>
+          </div>
+        </section>
 
-      <!-- Pandora Study Session -->
-      <section id="pandora-section" class="card full-card">
-        <h2>🎧 Pandora Study Session</h2>
-        <div class="pandora-container">
-          <div class="pandora-timer-box">
-            <div id="pandora-timer" class="circular-timer">
+        <!-- Attendance Tracking Section -->
+        <section id="attendance-section" class="card module-card">
+          <div class="section-header">
+            <h2>Attendance Safety</h2>
+            <button id="reset-simulation" class="btn-reset">Reset Simulation</button>
+          </div>
+          <div id="attendance-list" class="grid-list">
+            <!-- Attendance items will be injected here -->
+          </div>
+        </section>
+
+        <!-- Assignment Deadline Section -->
+        <section id="assignment-section" class="card module-card">
+          <div class="section-header">
+            <h2>Deadline Pressure</h2>
+            <div id="pressure-badge" class="badge">Score: 0</div>
+          </div>
+          <div id="assignment-list" class="list-container">
+            <!-- Assignment items will be injected here -->
+          </div>
+        </section>
+      </main>
+
+      <!-- Modal Container -->
+      <div id="modal-container" class="modal-overlay hidden">
+        <div class="modal-content card">
+          <div class="modal-header">
+            <h2 id="modal-title">Edit Entry</h2>
+            <button id="modal-close" class="btn-close">&times;</button>
+          </div>
+          <div id="modal-body">
+            <!-- Form will be injected here -->
+          </div>
+        </div>
+      </div>
+
+      <footer>
+        <p>&copy; 2026 Academic Risk Management System</p>
+      </footer>
+    </div>
+
+    <!-- Page 3: Pandora Study Session -->
+    <div id="page-pandora" class="page hidden">
+      <div class="pandora-page-bg"></div>
+      <div class="pandora-hero-layout">
+        <header class="pandora-top-nav">
+          <button id="nav-back-dashboard" class="btn-secondary nav-back">&larr; Dashboard</button>
+        </header>
+
+        <div class="pandora-hero-header">
+          <h1>🎧 Pandora Study Session</h1>
+          <p class="subtitle">Deep work. One session at a time.</p>
+        </div>
+
+        <div class="pandora-main-content">
+          <div class="pandora-timer-hero">
+            <div class="pandora-mode-switcher">
+              <button id="mode-focus" class="mode-pill active">🧠 Focus 25min</button>
+              <button id="mode-break" class="mode-pill">☕ Break 5min</button>
+            </div>
+
+            <div id="pandora-hero-timer" class="circular-timer large-timer">
               <span id="pandora-time-display">25:00</span>
               <span id="pandora-mode-display" class="timer-mode">Focus</span>
             </div>
-            <div class="pandora-controls">
-              <button id="pandora-start" class="btn-icon">▶</button>
-              <button id="pandora-pause" class="btn-icon">⏸</button>
-              <button id="pandora-reset" class="btn-icon">🔄</button>
+
+            <div class="pandora-controls hero-controls">
+              <button id="pandora-start" class="btn-pill btn-primary">Start</button>
+              <button id="pandora-pause" class="btn-pill btn-secondary">Pause</button>
+              <button id="pandora-reset" class="btn-pill btn-secondary">Reset</button>
             </div>
           </div>
-          <div class="pandora-sidebar">
-            <div class="pandora-goal-box">
-              <label for="pandora-goal-input">Daily Target:</label>
-              <div class="goal-input-row">
-                <input type="number" id="pandora-goal-input" min="1" value="4">
-                <button id="pandora-set-goal" class="btn-secondary">Set</button>
-              </div>
-              <div class="goal-progress-bg">
-                <div id="goal-progress-fill" class="goal-progress-fill" style="width: 0%"></div>
-              </div>
-              <div class="goal-text"><span id="goal-completed">0</span> / <span id="goal-total">4</span> sessions</div>
+
+          <div class="pandora-stats-row">
+            <div class="stat-card card">
+              <div class="stat-label">Sessions Today</div>
+              <div class="stat-value" id="stat-sessions">0</div>
             </div>
-            <div class="pandora-log-box">
+            <div class="stat-card card">
+              <div class="stat-label">Total Focus (mins)</div>
+              <div class="stat-value" id="stat-focus-time">0</div>
+            </div>
+            <div class="stat-card card">
+              <div class="stat-label">Current Streak 🔥</div>
+              <div class="stat-value" id="stat-streak-pandora">0</div>
+            </div>
+          </div>
+
+          <div class="pandora-grid-bottom">
+            <div class="pandora-sidebar-hero">
+              <div class="pandora-goal-box card">
+                <label for="pandora-goal-input">Daily Target:</label>
+                <div class="goal-input-row">
+                  <input type="number" id="pandora-goal-input" class="auth-input" min="1" value="4">
+                  <button id="pandora-set-goal" class="btn-secondary">Set</button>
+                </div>
+                <div class="goal-progress-bg">
+                  <div id="goal-progress-fill" class="goal-progress-fill" style="width: 0%"></div>
+                </div>
+                <div class="goal-text"><span id="goal-completed">0</span> / <span id="goal-total">4</span> sessions</div>
+              </div>
+            </div>
+
+            <div class="pandora-log-box timeline-box card">
               <h3>Session Log</h3>
-              <div id="pandora-log" class="pandora-log-list">
+              <div id="pandora-log" class="pandora-log-list timeline">
                 <!-- Log entries injected here -->
               </div>
             </div>
           </div>
         </div>
-      </section>
-    </main>
-
-    <!-- Modal Container -->
-    <div id="modal-container" class="modal-overlay hidden">
-      <div class="modal-content card">
-        <div class="modal-header">
-          <h2 id="modal-title">Edit Entry</h2>
-          <button id="modal-close" class="btn-close">&times;</button>
-        </div>
-        <div id="modal-body">
-          <!-- Form will be injected here -->
-        </div>
       </div>
     </div>
-
-    <footer>
-      <p>&copy; 2026 Academic Risk Management System</p>
-    </footer>
   </div>
   <script src="main.js"></script>
 </body>
