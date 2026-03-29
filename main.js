@@ -103,13 +103,30 @@ function initAuth() {
         navigateTo('page-auth');
     });
 
+    document.getElementById('user-dropdown-btn').addEventListener('click', () => {
+        document.getElementById('user-menu').classList.toggle('show-dropdown');
+    });
+
+    document.addEventListener('click', (e) => {
+        const userMenu = document.getElementById('user-menu');
+        const userBtn = document.getElementById('user-dropdown-btn');
+        const dropdownContent = document.querySelector('.dropdown-content');
+        if (userMenu && !userMenu.classList.contains('hidden')) {
+            if (!userBtn.contains(e.target) && !dropdownContent.contains(e.target)) {
+                userMenu.classList.remove('show-dropdown');
+            }
+        }
+    });
+
     document.getElementById('nav-logout').addEventListener('click', () => {
+        document.getElementById('user-menu').classList.remove('show-dropdown');
         localStorage.removeItem('currentUser');
         updateHeaderAuthUI(null);
         navigateTo('page-auth');
     });
     
     document.getElementById('nav-pandora-drop').addEventListener('click', () => {
+        document.getElementById('user-menu').classList.remove('show-dropdown');
         navigateTo('page-pandora');
     });
 }
