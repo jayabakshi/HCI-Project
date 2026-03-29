@@ -158,13 +158,34 @@
         </div>
 
         <div class="pandora-main-content">
-          <div class="pandora-timer-hero">
-            <div class="pandora-mode-switcher">
-              <button id="mode-focus" class="mode-pill active">🧠 Focus 25min</button>
-              <button id="mode-break" class="mode-pill">☕ Break 5min</button>
-            </div>
+            <div class="pandora-main">
+              <div class="pandora-controls">
+                <button id="mode-focus" class="btn-mode active">Focus Session</button>
+                <button id="mode-break" class="btn-mode">Short Break</button>
+              </div>
 
-            <div id="pandora-hero-timer" class="circular-timer large-timer">
+              <div class="timer-settings">
+                <div class="timer-setting-item">
+                  <label>🧠 Focus Duration</label>
+                  <div class="timer-input-row">
+                    <button class="timer-adj-btn" data-type="focus" data-action="minus">−</button>
+                    <span id="focus-duration-display">25</span>
+                    <span class="timer-unit">min</span>
+                    <button class="timer-adj-btn" data-type="focus" data-action="plus">+</button>
+                  </div>
+                </div>
+                <div class="timer-setting-item">
+                  <label>☕ Break Duration</label>
+                  <div class="timer-input-row">
+                    <button class="timer-adj-btn" data-type="break" data-action="minus">−</button>
+                    <span id="break-duration-display">5</span>
+                    <span class="timer-unit">min</span>
+                    <button class="timer-adj-btn" data-type="break" data-action="plus">+</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="pandora-hero-timer" class="circular-timer large-timer">
               <span id="pandora-time-display">25:00</span>
               <span id="pandora-mode-display" class="timer-mode">Focus</span>
             </div>

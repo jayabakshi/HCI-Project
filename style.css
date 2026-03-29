@@ -186,6 +186,28 @@ body.dark-mode header {
 .dropdown-item:hover { background: var(--bg-card-hover); color: var(--accent); }
 .dropdown-item.text-danger:hover { color: var(--danger); }
 
+#page-pandora {
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+  padding: 4rem 2rem; gap: 2rem;
+}
+.pandora-hero-text h1 { font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; color: transparent; text-align: center; }
+.pandora-hero-text p { color: var(--text-muted); text-align: center; }
+
+.timer-settings { display: flex; gap: 2rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.timer-setting-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; }
+.timer-setting-item label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+.timer-input-row { display: flex; align-items: center; gap: 0.6rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 0.4rem 0.8rem; }
+.timer-adj-btn { display: flex; align-items: center; justify-content: center; background: none; border: none; color: var(--accent); font-size: 1.3rem; font-weight: 700; cursor: pointer; width: 28px; height: 28px; border-radius: 6px; transition: background 0.2s; }
+.timer-adj-btn:hover { background: rgba(124,110,245,0.15); }
+.timer-adj-btn.disabled { opacity: 0.3; pointer-events: none; cursor: not-allowed; }
+#focus-duration-display, #break-duration-display { font-size: 1.3rem; font-weight: 700; color: var(--text-primary); min-width: 2ch; text-align: center; }
+.timer-unit { font-size: 0.75rem; color: var(--text-muted); }
+
+.pandora-main {
+  display: flex;
+  flex-direction: column;
+}
+
 h1 {
   font-size: 1.6rem;
   font-weight: 700;

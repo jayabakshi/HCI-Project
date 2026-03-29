@@ -329,13 +329,33 @@ function initStreak() {
 
 // --- Pandora Timer Logic ---
 let pandoraInterval;
-let pandoraTime = 25 * 60;
 let isPandoraRunning = false;
 let pandoraMode = 'focus';
 let sessionsCompleted = 0;
 let dailyGoal = 4;
 
+// Custom durations (loaded from localStorage)
+let focusDuration = parseInt(localStorage.getItem('pandoraFocus') || '25', 10);
+let breakDuration = parseInt(localStorage.getItem('pandoraBreak') || '5', 10);
+let pandoraTime = focusDuration * 60;
+
 function formatTime(seconds) { return `${Math.floor(seconds / 60).toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`; }
+
+function getModeDurationSeconds() {
+    return pandoraMode === 'focus' ? focusDuration * 60 : breakDuration * 60;
+}
+
+function updateDurationDisplays() {
+    document.getElementById('focus-duration-display').textContent = focusDuration;
+    document.getElementById('break-duration-display').textContent = breakDuration;
+}
+
+function setAdjButtonsDisabled(disabled) {
+    document.querySelectorAll('.timer-adj-btn').forEach(btn => {
+        if (disabled) btn.classList.add('disabled');
+        else btn.classList.remove('disabled');
+    });
+}
 
 function updatePandoraDisplay() {
     document.getElementById('pandora-time-display').textContent = formatTime(pandoraTime);
@@ -345,11 +365,12 @@ function updatePandoraDisplay() {
     if (pandoraMode === 'break') timerCircle.classList.add('break-mode');
     else timerCircle.classList.remove('break-mode');
     
-    const perc = (pandoraTime / (pandoraMode === 'focus' ? 1500 : 300)) * 100;
+    const totalSeconds = getModeDurationSeconds();
+    const perc = totalSeconds > 0 ? (pandoraTime / totalSeconds) * 100 : 100;
     timerCircle.style.setProperty('--timer-pct', `${perc}%`);
     
     document.getElementById('stat-sessions').textContent = sessionsCompleted;
-    document.getElementById('stat-focus-time').textContent = sessionsCompleted * 25;
+    document.getElementById('stat-focus-time').textContent = sessionsCompleted * focusDuration;
     
     document.getElementById('goal-completed').textContent = sessionsCompleted;
     document.getElementById('goal-total').textContent = dailyGoal;
@@ -359,24 +380,36 @@ function updatePandoraDisplay() {
 function startPandora() {
     if (isPandoraRunning) return;
     isPandoraRunning = true;
+    setAdjButtonsDisabled(true);
     pandoraInterval = setInterval(() => {
         pandoraTime--; updatePandoraDisplay();
         if (pandoraTime <= 0) {
             clearInterval(pandoraInterval); isPandoraRunning = false;
+            setAdjButtonsDisabled(false);
             if (pandoraMode === 'focus') {
                 sessionsCompleted++;
-                document.getElementById('pandora-log').insertAdjacentHTML('afterbegin', `<div class="log-entry">Completed 25 min session at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`);
+                document.getElementById('pandora-log').insertAdjacentHTML('afterbegin', `<div class="log-entry">Completed ${focusDuration} min session at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`);
                 setPandoraMode('break'); showToast('Focus session complete! Time for a break. ☕');
             } else { setPandoraMode('focus'); showToast('Break over! Ready to focus? 🧠'); }
         }
     }, 1000);
 }
 
-function pausePandora() { clearInterval(pandoraInterval); isPandoraRunning = false; }
-function resetPandora() { pausePandora(); pandoraTime = pandoraMode === 'focus' ? 1500 : 300; updatePandoraDisplay(); }
+function pausePandora() {
+    clearInterval(pandoraInterval);
+    isPandoraRunning = false;
+    setAdjButtonsDisabled(false);
+}
+
+function resetPandora() {
+    pausePandora();
+    pandoraTime = getModeDurationSeconds();
+    updatePandoraDisplay();
+}
 
 function setPandoraMode(mode) {
-    pandoraMode = mode; pandoraTime = mode === 'focus' ? 1500 : 300;
+    pandoraMode = mode;
+    pandoraTime = mode === 'focus' ? focusDuration * 60 : breakDuration * 60;
     document.getElementById('mode-focus').classList.toggle('active', mode === 'focus');
     document.getElementById('mode-break').classList.toggle('active', mode === 'break');
     pausePandora(); updatePandoraDisplay();
@@ -393,6 +426,34 @@ function initPandora() {
         const val = parseInt(document.getElementById('pandora-goal-input').value, 10);
         if (val > 0) { dailyGoal = val; updatePandoraDisplay(); }
     });
+
+    // Duration adjustment buttons
+    document.querySelectorAll('.timer-adj-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (isPandoraRunning) return;
+            const type = btn.dataset.type;
+            const action = btn.dataset.action;
+
+            if (type === 'focus') {
+                if (action === 'plus' && focusDuration < 90) focusDuration += 5;
+                else if (action === 'minus' && focusDuration > 5) focusDuration -= 5;
+                localStorage.setItem('pandoraFocus', focusDuration);
+            } else if (type === 'break') {
+                if (action === 'plus' && breakDuration < 30) breakDuration += 1;
+                else if (action === 'minus' && breakDuration > 1) breakDuration -= 1;
+                localStorage.setItem('pandoraBreak', breakDuration);
+            }
+
+            updateDurationDisplays();
+            // If timer is idle, update the main display immediately
+            if (!isPandoraRunning) {
+                pandoraTime = getModeDurationSeconds();
+                updatePandoraDisplay();
+            }
+        });
+    });
+
+    updateDurationDisplays();
     updatePandoraDisplay();
 }
 
