@@ -457,85 +457,64 @@ function initPandora() {
     updatePandoraDisplay();
 }
 
+
 // --- AI Study Planner ---
-function collectPlannerData() {
-    const avgAtt = subjects.length > 0 ? subjects.reduce((sum, s) => sum + calculateAttendance(s.attended, s.total), 0) / subjects.length : 100;
-    const pScore = calculatePressureScore(assignments);
-    const rScore = calculateRiskScore(avgAtt, pScore);
-    const status = getRiskStatus(rScore);
-    const streak = parseInt(localStorage.getItem('studyStreak') || '0', 10);
-
-    return {
-        healthScore: rScore,
-        riskLevel: status.label,
-        streak,
-        subjects: subjects.map(s => {
-            const pct = calculateAttendance(s.attended, s.total);
-            const stat = pct >= 80 ? 'safe' : pct >= 75 ? 'warning' : 'critical';
-            return {
-                name: s.name, attended: s.attended, total: s.total,
-                percentage: pct, status: stat,
-                canSkip: calculateSafeSkips(s.attended, s.total),
-                needToAttend: calculateRecoveryCount(s.attended, s.total)
-            };
-        }),
-        assignments: assignments.map(a => {
-            const daysLeft = getDaysRemaining(a.dueDate);
-            return {
-                title: a.title, subject: a.subject, daysLeft,
-                urgency: categorizeAssignment(a.dueDate)
-            };
-        }),
-        pandoraSessions: sessionsCompleted
-    };
-}
-
-function buildStudyPrompt(data) {
-    return `You are an academic advisor for a college student. Based on their current academic data, generate a clear, actionable, and encouraging study plan for today and this week.
-
-STUDENT ACADEMIC DATA:
-- Overall Health Score: ${data.healthScore}% (${data.riskLevel})
-- Study Streak: ${data.streak} days
-- Pandora Study Sessions Today: ${data.pandoraSessions}
-
-ATTENDANCE STATUS:
-${data.subjects.map(s =>
-    `- ${s.name}: ${s.percentage}% attendance (${s.status})${s.status === 'critical' ? ` — needs ${s.needToAttend} consecutive classes to recover` : s.status === 'warning' ? ` — can only skip ${s.canSkip} more class` : ` — can safely skip ${s.canSkip} more classes`}`
-).join('\n')}
-
-UPCOMING DEADLINES:
-${data.assignments.map(a =>
-    `- ${a.title} (${a.subject}): ${a.urgency === 'overdue' ? '🔴 OVERDUE' : a.urgency === 'today' ? '🟠 Due TODAY' : a.urgency === 'soon' ? `🟡 ${a.daysLeft} days left` : `🟢 ${a.daysLeft} days left`}`
-).join('\n')}
-
-Generate a study plan with these exact sections using this format:
-
-## 🚨 Urgent Actions (do these today)
-[2-3 specific actions based on overdue/critical items]
-
-## 📚 Today's Study Priority Order
-[Ranked list of subjects to focus on today with brief reason why]
-
-## 📅 This Week's Game Plan
-[Day-by-day focus areas for the next 5 days — keep it concise]
-
-## 💡 Smart Tips For You
-[2-3 personalized tips based on their specific situation — attendance recovery strategies, deadline management, Pandora session recommendations]
-
-## 💪 Motivational Note
-[One short personalized encouragement based on their health score and streak]
-
-Keep the tone friendly, direct, and encouraging. Use the student's actual data to make it feel truly personalized. Do not be generic.`;
-}
-
 function formatAIResponse(text) {
     return text
         .replace(/## (.*)/g, '<h3 class="ai-section-title">$1</h3>')
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/- (.*)/g, '<li>$1</li>')
-        .replace(/(<li>.*<\/li>)/gs, '<ul class="ai-list">$1</ul>')
-        .replace(/\n\n/g, '<br>')
+        .replace(/^- (.*)/gm, '<li>$1</li>')
+        .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul class="ai-list">$1</ul>')
+        .replace(/\n{2,}/g, '<br>')
         .trim();
+}
+
+function generateFallbackPlan() {
+    const healthScore = document.getElementById('health-score')?.textContent || '0%';
+    const score = parseInt(healthScore);
+    const streak = document.getElementById('streak-days')?.textContent || '0';
+
+    const subjectItems = [];
+    document.querySelectorAll('.subject-item').forEach(el => {
+        const name = el.querySelector('.subject-name')?.textContent || 'Subject';
+        const stats = el.querySelector('.subject-stats')?.textContent || '';
+        const insight = el.querySelector('.insight-text')?.textContent || '';
+        subjectItems.push({ name, stats, insight });
+    });
+
+    const assignmentItems = [];
+    document.querySelectorAll('.assignment-item').forEach(el => {
+        const title = el.querySelector('h3')?.textContent || 'Assignment';
+        const urgency = el.querySelector('.deadline-countdown')?.textContent || '';
+        assignmentItems.push({ title, urgency });
+    });
+
+    const urgentAssignments = assignmentItems.filter(a =>
+        a.urgency.toLowerCase().includes('overdue') || a.urgency.toLowerCase().includes('today')
+    );
+
+    return `
+        <h3 class="ai-section-title">🚨 Urgent Actions</h3>
+        <ul class="ai-list">
+          ${urgentAssignments.length > 0
+            ? urgentAssignments.map(a => `<li>Complete <strong>${a.title}</strong> — ${a.urgency}</li>`).join('')
+            : '<li>No overdue items — great job staying on track!</li>'
+          }
+        </ul>
+        <h3 class="ai-section-title">📚 Today's Priority Order</h3>
+        <ul class="ai-list">
+          ${subjectItems.slice(0, 4).map((s, i) => `<li>${i + 1}. <strong>${s.name}</strong> — ${s.stats} · ${s.insight}</li>`).join('')}
+        </ul>
+        <h3 class="ai-section-title">💡 Smart Tips</h3>
+        <ul class="ai-list">
+          <li>Use Pandora sessions for deep focus — aim for at least 2 sessions today</li>
+          <li>${score < 70 ? 'Your health score needs attention — prioritize attendance recovery' : 'Keep maintaining your current academic pace'}</li>
+        </ul>
+        <h3 class="ai-section-title">💪 You've Got This!</h3>
+        <ul class="ai-list">
+          <li>${parseInt(streak) > 3 ? `Amazing ${streak}-day streak! Keep the momentum going 🔥` : 'Every expert was once a beginner — start your streak today! 🚀'}</li>
+        </ul>
+    `;
 }
 
 async function generateStudyPlan() {
@@ -545,15 +524,50 @@ async function generateStudyPlan() {
     const emptyState = document.getElementById('ai-empty-state');
     const output = document.getElementById('ai-plan-output');
 
+    // Collect data from live DOM
+    const healthScore = document.getElementById('health-score')?.textContent || '0%';
+    const riskStatus = document.getElementById('risk-status')?.textContent || 'Unknown';
+    const streak = document.getElementById('streak-days')?.textContent || '0';
+
+    const subjectTexts = [];
+    document.querySelectorAll('.subject-item').forEach(el => {
+        const name = el.querySelector('.subject-name')?.textContent || '';
+        const stats = el.querySelector('.subject-stats')?.textContent || '';
+        const insight = el.querySelector('.insight-text')?.textContent || '';
+        subjectTexts.push(`${name}: ${stats} — ${insight}`);
+    });
+
+    const assignmentTexts = [];
+    document.querySelectorAll('.assignment-item').forEach(el => {
+        const title = el.querySelector('h3')?.textContent || '';
+        const urgency = el.querySelector('.deadline-countdown')?.textContent || '';
+        assignmentTexts.push(`${title} (${urgency})`);
+    });
+
+    const prompt = `You are a friendly academic advisor for a college student in India. Generate a concise, actionable study plan based on this data:
+
+Health Score: ${healthScore} | Risk: ${riskStatus} | Study Streak: ${streak} days
+
+Subjects: ${subjectTexts.join(', ')}
+
+Deadlines: ${assignmentTexts.join(', ')}
+
+Respond with exactly these 4 sections, keep each section to 2-3 bullet points max:
+
+## 🚨 Urgent Actions
+## 📚 Today's Priority Order
+## 💡 Smart Tips
+## 💪 You've Got This!
+
+Be specific, friendly, and encouraging. Reference the actual subjects and assignments by name.`;
+
+    // UI state
     btn.disabled = true;
     btn.textContent = '⏳ Generating...';
     emptyState.classList.add('hidden');
     output.classList.remove('hidden');
     loading.classList.remove('hidden');
     result.innerHTML = '';
-
-    const planData = collectPlannerData();
-    const prompt = buildStudyPrompt(planData);
 
     try {
         const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -566,30 +580,35 @@ async function generateStudyPlan() {
             },
             body: JSON.stringify({
                 model: 'claude-sonnet-4-20250514',
-                max_tokens: 1000,
+                max_tokens: 800,
                 messages: [{ role: 'user', content: prompt }]
             })
         });
 
-        const responseData = await response.json();
-        if (!response.ok) throw new Error(responseData.error?.message || 'API request failed');
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
 
-        const text = responseData.content[0].text;
+        const data = await response.json();
+        const text = data.content?.[0]?.text;
+        if (!text) throw new Error('No response text');
+
         loading.classList.add('hidden');
         result.innerHTML = formatAIResponse(text);
 
-        localStorage.setItem('ai-plan', JSON.stringify({
-            text, generatedAt: new Date().toISOString()
-        }));
-
         const timestamp = document.createElement('p');
         timestamp.className = 'ai-timestamp';
-        timestamp.textContent = 'Generated just now · Click to refresh anytime';
+        timestamp.textContent = `Generated at ${new Date().toLocaleTimeString()} · Click to regenerate`;
         result.appendChild(timestamp);
+
+        localStorage.setItem('ai-plan', JSON.stringify({ text, generatedAt: new Date().toISOString() }));
 
     } catch (err) {
         loading.classList.add('hidden');
-        result.innerHTML = `<p class="ai-error">⚠️ Could not generate plan: ${err.message}. Please check your API key and try again.</p>`;
+        // Fallback: generate a rule-based plan if API fails
+        result.innerHTML = generateFallbackPlan();
+        const note = document.createElement('p');
+        note.className = 'ai-timestamp';
+        note.textContent = '⚡ Generated offline · Enter API key for AI-powered plan';
+        result.appendChild(note);
     } finally {
         btn.disabled = false;
         btn.textContent = '✨ Regenerate Plan';
@@ -597,7 +616,10 @@ async function generateStudyPlan() {
 }
 
 function initAIPlanner() {
-    document.getElementById('generate-plan-btn').addEventListener('click', () => {
+    const genBtn = document.getElementById('generate-plan-btn');
+    if (!genBtn) return;
+
+    genBtn.addEventListener('click', () => {
         if (!localStorage.getItem('anthropic-api-key')) {
             const key = window.prompt('Enter your Anthropic API key to enable AI Study Planner:');
             if (key && key.trim()) {
@@ -618,18 +640,18 @@ function initAIPlanner() {
             const ageMinutes = Math.floor(ageMs / 60000);
 
             if (ageMs < 3600000) {
-                document.getElementById('ai-empty-state').classList.add('hidden');
+                document.getElementById('ai-empty-state')?.classList.add('hidden');
                 const output = document.getElementById('ai-plan-output');
-                output.classList.remove('hidden');
+                output?.classList.remove('hidden');
                 const result = document.getElementById('ai-result');
-                result.innerHTML = formatAIResponse(text);
+                if (result) result.innerHTML = formatAIResponse(text);
 
                 const ts = document.createElement('p');
                 ts.className = 'ai-timestamp';
                 ts.textContent = `Generated ${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago · Click to refresh`;
-                result.appendChild(ts);
+                result?.appendChild(ts);
 
-                document.getElementById('generate-plan-btn').textContent = '✨ Regenerate Plan';
+                if (genBtn) genBtn.textContent = '✨ Regenerate Plan';
             }
         } catch (e) { /* ignore corrupt cache */ }
     }
@@ -645,11 +667,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateDashboard();
 
-    document.getElementById('reset-simulation').addEventListener('click', () => {
-        subjects = JSON.parse(JSON.stringify(INITIAL_DATA.subjects));
-        window.confettiFired = false;
-        updateDashboard();
-    });
+    const resetBtn = document.getElementById('reset-simulation');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', () => {
+            subjects = JSON.parse(JSON.stringify(INITIAL_DATA.subjects));
+            window.confettiFired = false;
+            updateDashboard();
+        });
+    }
 
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
@@ -658,3 +683,4 @@ document.addEventListener('DOMContentLoaded', () => {
         updateHeaderAuthUI(null);
     }
 });
+

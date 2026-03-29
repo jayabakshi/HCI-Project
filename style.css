@@ -193,7 +193,7 @@ body.dark-mode header {
   flex-direction: column; align-items: center; justify-content: flex-start;
   padding: 4rem 2rem; gap: 2rem;
 }
-.pandora-hero-text h1 { font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; color: transparent; text-align: center; }
+.pandora-hero-text h1 { font-size: 2.5rem; margin-bottom: 0.5rem; background: linear-gradient(90deg, var(--accent), var(--accent-2)); -webkit-background-clip: text; background-clip: text; color: transparent; text-align: center; }
 .pandora-hero-text p { color: var(--text-muted); text-align: center; }
 
 .timer-settings { display: flex; gap: 2rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
@@ -452,13 +452,31 @@ h1 {
 .full-card { grid-column: 1 / -1; }
 .ai-planner-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
 .ai-subtitle { color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem; }
-.btn-generate {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: white; border: none; border-radius: 12px;
-  padding: 0.7rem 1.4rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap;
-  font-family: 'Outfit', sans-serif;
+
+#generate-plan-btn {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2)) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 0.75rem 1.6rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  font-family: 'Outfit', sans-serif !important;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 15px var(--glow);
+  transition: all 0.2s ease !important;
 }
-.btn-generate:hover { transform: translateY(-2px); box-shadow: 0 6px 20px var(--glow); }
-.btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+#generate-plan-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px var(--glow);
+}
+#generate-plan-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .ai-output.hidden { display: none; }
 .ai-empty-state { text-align: center; padding: 2rem; color: var(--text-muted); background: var(--bg-card-hover); border-radius: 12px; border: 1px dashed var(--border); font-size: 0.9rem; }
 .ai-empty-state.hidden { display: none; }
@@ -472,6 +490,29 @@ h1 {
 .ai-list li { margin-bottom: 0.3rem; font-size: 0.9rem; }
 .ai-timestamp { font-size: 0.75rem; color: var(--text-muted); margin-top: 1.5rem; text-align: right; font-style: italic; }
 .ai-error { color: var(--accent-danger); text-align: center; padding: 1rem; }
+
+/* Pandora Mode Toggle Buttons */
+.pandora-mode-btn {
+  padding: 0.5rem 1.3rem;
+  border-radius: 20px;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.pandora-mode-btn.active {
+  background: var(--accent);
+  color: white;
+}
+.pandora-mode-btn:hover {
+  background: var(--accent);
+  color: white;
+}
+
 
 /* Pandora Dedicated Page */
 .pandora-hero-layout { max-width: 1000px; margin: 0 auto; padding: 2rem; position: relative; z-index: 2; }
