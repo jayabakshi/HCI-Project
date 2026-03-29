@@ -129,7 +129,7 @@ function renderAttendance() {
                 <span class="subject-stats">${sub.attended}/${sub.total} (${pct}%)</span>
             </div>
             <div class="progress-bar-bg">
-                <div class="progress-bar-fill state-${colorClass}" style="width: ${pct}%"></div>
+                <div class="progress-bar-fill state-${colorClass} attendance-bar-fill" style="--fill-width: ${pct}%"></div>
             </div>
             <div class="insight-text text-${colorClass}">${insight}</div>`;
         list.appendChild(item);
@@ -271,6 +271,9 @@ function initDarkMode() {
             const darkActive = document.body.classList.contains('dark-mode');
             localStorage.setItem('darkMode', darkActive);
             toggleBtn.textContent = darkActive ? '☀️' : '🌙';
+            
+            toggleBtn.classList.add('spinning');
+            setTimeout(() => toggleBtn.classList.remove('spinning'), 400);
         });
     }
 }
