@@ -457,15 +457,192 @@ function initPandora() {
     updatePandoraDisplay();
 }
 
+// --- AI Study Planner ---
+function collectPlannerData() {
+    const avgAtt = subjects.length > 0 ? subjects.reduce((sum, s) => sum + calculateAttendance(s.attended, s.total), 0) / subjects.length : 100;
+    const pScore = calculatePressureScore(assignments);
+    const rScore = calculateRiskScore(avgAtt, pScore);
+    const status = getRiskStatus(rScore);
+    const streak = parseInt(localStorage.getItem('studyStreak') || '0', 10);
+
+    return {
+        healthScore: rScore,
+        riskLevel: status.label,
+        streak,
+        subjects: subjects.map(s => {
+            const pct = calculateAttendance(s.attended, s.total);
+            const stat = pct >= 80 ? 'safe' : pct >= 75 ? 'warning' : 'critical';
+            return {
+                name: s.name, attended: s.attended, total: s.total,
+                percentage: pct, status: stat,
+                canSkip: calculateSafeSkips(s.attended, s.total),
+                needToAttend: calculateRecoveryCount(s.attended, s.total)
+            };
+        }),
+        assignments: assignments.map(a => {
+            const daysLeft = getDaysRemaining(a.dueDate);
+            return {
+                title: a.title, subject: a.subject, daysLeft,
+                urgency: categorizeAssignment(a.dueDate)
+            };
+        }),
+        pandoraSessions: sessionsCompleted
+    };
+}
+
+function buildStudyPrompt(data) {
+    return `You are an academic advisor for a college student. Based on their current academic data, generate a clear, actionable, and encouraging study plan for today and this week.
+
+STUDENT ACADEMIC DATA:
+- Overall Health Score: ${data.healthScore}% (${data.riskLevel})
+- Study Streak: ${data.streak} days
+- Pandora Study Sessions Today: ${data.pandoraSessions}
+
+ATTENDANCE STATUS:
+${data.subjects.map(s =>
+    `- ${s.name}: ${s.percentage}% attendance (${s.status})${s.status === 'critical' ? ` — needs ${s.needToAttend} consecutive classes to recover` : s.status === 'warning' ? ` — can only skip ${s.canSkip} more class` : ` — can safely skip ${s.canSkip} more classes`}`
+).join('\n')}
+
+UPCOMING DEADLINES:
+${data.assignments.map(a =>
+    `- ${a.title} (${a.subject}): ${a.urgency === 'overdue' ? '🔴 OVERDUE' : a.urgency === 'today' ? '🟠 Due TODAY' : a.urgency === 'soon' ? `🟡 ${a.daysLeft} days left` : `🟢 ${a.daysLeft} days left`}`
+).join('\n')}
+
+Generate a study plan with these exact sections using this format:
+
+## 🚨 Urgent Actions (do these today)
+[2-3 specific actions based on overdue/critical items]
+
+## 📚 Today's Study Priority Order
+[Ranked list of subjects to focus on today with brief reason why]
+
+## 📅 This Week's Game Plan
+[Day-by-day focus areas for the next 5 days — keep it concise]
+
+## 💡 Smart Tips For You
+[2-3 personalized tips based on their specific situation — attendance recovery strategies, deadline management, Pandora session recommendations]
+
+## 💪 Motivational Note
+[One short personalized encouragement based on their health score and streak]
+
+Keep the tone friendly, direct, and encouraging. Use the student's actual data to make it feel truly personalized. Do not be generic.`;
+}
+
+function formatAIResponse(text) {
+    return text
+        .replace(/## (.*)/g, '<h3 class="ai-section-title">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/- (.*)/g, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>)/gs, '<ul class="ai-list">$1</ul>')
+        .replace(/\n\n/g, '<br>')
+        .trim();
+}
+
+async function generateStudyPlan() {
+    const btn = document.getElementById('generate-plan-btn');
+    const loading = document.getElementById('ai-loading');
+    const result = document.getElementById('ai-result');
+    const emptyState = document.getElementById('ai-empty-state');
+    const output = document.getElementById('ai-plan-output');
+
+    btn.disabled = true;
+    btn.textContent = '⏳ Generating...';
+    emptyState.classList.add('hidden');
+    output.classList.remove('hidden');
+    loading.classList.remove('hidden');
+    result.innerHTML = '';
+
+    const planData = collectPlannerData();
+    const prompt = buildStudyPrompt(planData);
+
+    try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': localStorage.getItem('anthropic-api-key') || '',
+                'anthropic-dangerous-direct-browser-access': 'true',
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 1000,
+                messages: [{ role: 'user', content: prompt }]
+            })
+        });
+
+        const responseData = await response.json();
+        if (!response.ok) throw new Error(responseData.error?.message || 'API request failed');
+
+        const text = responseData.content[0].text;
+        loading.classList.add('hidden');
+        result.innerHTML = formatAIResponse(text);
+
+        localStorage.setItem('ai-plan', JSON.stringify({
+            text, generatedAt: new Date().toISOString()
+        }));
+
+        const timestamp = document.createElement('p');
+        timestamp.className = 'ai-timestamp';
+        timestamp.textContent = 'Generated just now · Click to refresh anytime';
+        result.appendChild(timestamp);
+
+    } catch (err) {
+        loading.classList.add('hidden');
+        result.innerHTML = `<p class="ai-error">⚠️ Could not generate plan: ${err.message}. Please check your API key and try again.</p>`;
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Regenerate Plan';
+    }
+}
+
+function initAIPlanner() {
+    document.getElementById('generate-plan-btn').addEventListener('click', () => {
+        if (!localStorage.getItem('anthropic-api-key')) {
+            const key = window.prompt('Enter your Anthropic API key to enable AI Study Planner:');
+            if (key && key.trim()) {
+                localStorage.setItem('anthropic-api-key', key.trim());
+            } else {
+                return;
+            }
+        }
+        generateStudyPlan();
+    });
+
+    // Restore cached plan if less than 1 hour old
+    const cached = localStorage.getItem('ai-plan');
+    if (cached) {
+        try {
+            const { text, generatedAt } = JSON.parse(cached);
+            const ageMs = Date.now() - new Date(generatedAt).getTime();
+            const ageMinutes = Math.floor(ageMs / 60000);
+
+            if (ageMs < 3600000) {
+                document.getElementById('ai-empty-state').classList.add('hidden');
+                const output = document.getElementById('ai-plan-output');
+                output.classList.remove('hidden');
+                const result = document.getElementById('ai-result');
+                result.innerHTML = formatAIResponse(text);
+
+                const ts = document.createElement('p');
+                ts.className = 'ai-timestamp';
+                ts.textContent = `Generated ${ageMinutes} minute${ageMinutes !== 1 ? 's' : ''} ago · Click to refresh`;
+                result.appendChild(ts);
+
+                document.getElementById('generate-plan-btn').textContent = '✨ Regenerate Plan';
+            }
+        } catch (e) { /* ignore corrupt cache */ }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize logic bindings
     initAuth();
     initQuotes();
     initDarkMode();
     initStreak();
     initPandora();
+    initAIPlanner();
 
-    // 2. Pre-render the Dashboard instantly
     updateDashboard();
 
     document.getElementById('reset-simulation').addEventListener('click', () => {
@@ -474,12 +651,10 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDashboard();
     });
 
-    // 3. Process existing state unconditionally
     const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
-        startSession(JSON.parse(savedUser), false); // No toast on reload
+        startSession(JSON.parse(savedUser), false);
     } else {
         updateHeaderAuthUI(null);
-        // Do not explicitly hide overlay, its active by default in HTML
     }
 });

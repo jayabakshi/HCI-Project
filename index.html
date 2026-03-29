@@ -124,6 +124,28 @@
             <!-- Assignment items will be injected here -->
           </div>
         </section>
+        <!-- AI Study Planner -->
+        <section id="ai-planner" class="card full-card">
+          <div class="ai-planner-header">
+            <div>
+              <h2>🤖 AI Study Planner</h2>
+              <p class="ai-subtitle">Personalized recommendations based on your academic data</p>
+            </div>
+            <button id="generate-plan-btn" class="btn-generate">
+              ✨ Generate My Plan
+            </button>
+          </div>
+          <div id="ai-plan-output" class="ai-output hidden">
+            <div id="ai-loading" class="ai-loading hidden">
+              <div class="ai-spinner"></div>
+              <p>Analyzing your academic data...</p>
+            </div>
+            <div id="ai-result" class="ai-result"></div>
+          </div>
+          <div id="ai-empty-state" class="ai-empty-state">
+            <p>🎯 Click "Generate My Plan" to get personalized study recommendations based on your attendance and deadlines.</p>
+          </div>
+        </section>
       </main>
 
       <!-- Modal Container -->
