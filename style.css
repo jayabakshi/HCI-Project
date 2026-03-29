@@ -431,19 +431,22 @@ h1 {
 
 /* Subject Creation and Action Styles */
 .header-actions { display: flex; gap: 0.8rem; }
-.btn-add-subject {
-  background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  color: white;
-  border: none;
+#add-subject-btn {
+  background: transparent;
+  border: 1px solid var(--border);
   border-radius: 8px;
-  padding: 0.4rem 1rem;
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
+  padding: 0.4rem 0.9rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
   font-family: 'Outfit', sans-serif;
-  transition: all 0.2s;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
 }
-.btn-add-subject:hover { transform: translateY(-1px); box-shadow: 0 4px 12px var(--glow); }
+#add-subject-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 .subject-form-card {
   background: var(--bg-card-hover);
