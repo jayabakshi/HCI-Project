@@ -15,9 +15,10 @@
 </head>
 
 <body>
-  <div id="app">
-    <!-- Page 1: Auth -->
-    <div id="page-auth" class="page active">
+  <div id="toast-container"></div>
+  <!-- Overlay: Auth -->
+  <div id="page-auth" class="auth-overlay active">
+    <!-- Existing Auth particles -->
       <div class="auth-bg-animation">
         <div class="particle"></div>
         <div class="particle"></div>
@@ -34,6 +35,7 @@
             <button type="button" id="tab-login" class="auth-tab active">Login</button>
             <button type="button" id="tab-register" class="auth-tab">Register</button>
           </div>
+          <div id="reg-success-msg" class="success-msg hidden">✅ Account created! Please log in.</div>
           <form id="form-login" class="auth-form active">
             <input type="email" id="login-email" class="auth-input" placeholder="Email" required />
             <input type="password" id="login-password" class="auth-input" placeholder="Password" required />
@@ -46,13 +48,17 @@
             <input type="password" id="reg-password" class="auth-input" placeholder="Password" required />
             <button type="submit" id="btn-register" class="btn-primary auth-submit">Register</button>
           </form>
-          <p class="auth-demo-text">Demo mode — no backend needed. Just enter any details.</p>
+          <div class="auth-demo-text">
+            Demo mode — no backend needed. Just enter any details.<br />
+            <a href="#" id="btn-guest" class="guest-link">Continue as Guest (Demo Mode)</a>
+          </div>
         </div>
       </div>
     </div>
 
+  <div id="app">
     <!-- Page 2: Dashboard -->
-    <div id="page-dashboard" class="page hidden">
+    <div id="page-dashboard" class="page active">
       <header>
         <div class="header-content">
           <div class="header-main">
@@ -61,10 +67,21 @@
             <div id="quote-banner" class="quote-banner"></div>
           </div>
           <div class="header-actions">
-            <span id="user-greeting" class="user-greeting">👤 Guest</span>
-            <button id="nav-pandora" class="btn-secondary nav-btn">🎧 Pandora</button>
+            <!-- Auth Nav -->
+            <div id="header-auth-container" class="dropdown-wrapper">
+              <button id="nav-login-btn" class="btn-secondary nav-btn">👤 Login</button>
+              
+              <div id="user-menu" class="user-menu hidden">
+                <button id="user-dropdown-btn" class="btn-secondary nav-btn">👤 <span id="user-greeting-name">Student</span></button>
+                <div class="dropdown-content">
+                  <button id="nav-pandora-drop" class="dropdown-item">🎧 Pandora Session</button>
+                  <button id="nav-logout" class="dropdown-item text-danger">🚪 Logout</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Legacy pandora/logout removed, kept only Dark Mode -->
             <button id="dark-mode-toggle" class="btn-icon header-btn">🌙</button>
-            <button id="nav-logout" class="btn-reset">Logout</button>
           </div>
         </div>
       </header>
