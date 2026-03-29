@@ -165,7 +165,20 @@ function startSession(user, showNotification = false) {
         showToast(`👋 Welcome back, ${user.name}!`);
     }
 }
-
+function showToast(message) {
+    const existing = document.getElementById('toast');
+    if (existing) existing.remove();
+    const toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('toast-visible'), 10);
+    setTimeout(() => {
+        toast.classList.remove('toast-visible');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
 
 // --- Logic: Attendance ---
 const calculateAttendance = (attended, total) => { return total === 0 ? 0 : Math.round((attended / total) * 100); };
@@ -189,22 +202,31 @@ const getRecommendations = (attendanceScore, pressureScore) => {
 };
 
 // --- Logic: Storage & Data ---
-const INITIAL_DATA = {
-    subjects: [
-        { id: 1, name: 'Computer Networks', attended: 32, total: 40 },
-        { id: 2, name: 'Theory of Computation', attended: 27, total: 38 },
-        { id: 3, name: 'Data Structures', attended: 36, total: 45 },
-        { id: 4, name: 'Java Programming', attended: 22, total: 30 }
-    ],
-    assignments: [
-        { id: 1, title: 'DSA Assignment', subject: 'Data Structures', dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), workload: 4 },
-        { id: 2, title: 'CN Lab Record', subject: 'Computer Networks', dueDate: new Date(Date.now() + 0 * 24 * 60 * 60 * 1000).toISOString(), workload: 3 },
-        { id: 3, title: 'TOC Tutorial Sheet', subject: 'Theory of Computation', dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), workload: 2 },
-        { id: 4, title: 'Java Project Phase 1', subject: 'Java Programming', dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), workload: 5 }
-    ]
-};
-let subjects = JSON.parse(JSON.stringify(INITIAL_DATA.subjects));
-let assignments = INITIAL_DATA.assignments;
+const DEFAULT_SUBJECTS = [
+    { id: 1, name: 'Computer Networks', attended: 32, total: 40 },
+    { id: 2, name: 'Theory of Computation', attended: 27, total: 38 },
+    { id: 3, name: 'Data Structures', attended: 36, total: 45 },
+    { id: 4, name: 'Java Programming', attended: 22, total: 30 }
+];
+
+const DEFAULT_ASSIGNMENTS = [
+    { id: 1, title: 'DSA Assignment', subject: 'Data Structures', dueDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), workload: 4 },
+    { id: 2, title: 'CN Lab Record', subject: 'Computer Networks', dueDate: new Date(Date.now() + 0 * 24 * 60 * 60 * 1000).toISOString(), workload: 3 },
+    { id: 3, title: 'TOC Tutorial Sheet', subject: 'Theory of Computation', dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), workload: 2 },
+    { id: 4, title: 'Java Project Phase 1', subject: 'Java Programming', dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), workload: 5 }
+];
+
+function loadSubjects() {
+    const saved = localStorage.getItem('subjects');
+    return saved ? JSON.parse(saved) : DEFAULT_SUBJECTS;
+}
+
+function saveSubjects(data) {
+    localStorage.setItem('subjects', JSON.stringify(data));
+}
+
+let subjects = loadSubjects();
+let assignments = DEFAULT_ASSIGNMENTS;
 
 // --- Dashboard Render Logic ---
 function renderAttendance() {
@@ -216,18 +238,99 @@ function renderAttendance() {
         const safeSkips = calculateSafeSkips(sub.attended, sub.total);
         const recovery = calculateRecoveryCount(sub.attended, sub.total);
         const item = document.createElement('div');
-        item.className = `subject-item bg-${colorClass}`;
+        item.className = `subject-item bg-${colorClass} attendance-item`;
         const insight = (pct >= 75) ? `You can miss ${safeSkips} more classes safely.` : `Attend next ${recovery} classes to regain safety.`;
         item.innerHTML = `
             <div class="subject-info">
-                <div class="subject-header-row"><span class="subject-name">${sub.name}</span><button class="btn-skip" data-id="${sub.id}">Skip Next Class</button></div>
+                <div class="subject-header-row">
+                    <span class="subject-name">${sub.name}</span>
+                    <div class="subject-card-actions">
+                        <button class="btn-skip" data-id="${sub.id}" title="Skip Next Class">⏭️</button>
+                        <button class="btn-edit-subject" data-id="${sub.id}" title="Edit">✏️</button>
+                        <button class="btn-delete-subject" data-id="${sub.id}" title="Delete">🗑️</button>
+                    </div>
+                </div>
                 <span class="subject-stats">${sub.attended}/${sub.total} (${pct}%)</span>
             </div>
             <div class="progress-bar-bg"><div class="progress-bar-fill state-${colorClass} attendance-bar-fill" style="--fill-width: ${pct}%"></div></div>
             <div class="insight-text text-${colorClass}">${insight}</div>`;
         list.appendChild(item);
     });
-    list.querySelectorAll('.btn-skip').forEach(btn => btn.onclick = () => { const sub = subjects.find(s => s.id === parseInt(btn.dataset.id)); if (sub) { sub.total += 1; updateDashboard(); } });
+
+    // Event Listeners for actions
+    list.querySelectorAll('.btn-skip').forEach(btn => btn.onclick = (e) => {
+        const id = parseInt(e.currentTarget.dataset.id);
+        const sub = subjects.find(s => s.id === id);
+        if (sub) {
+            sub.total += 1;
+            saveSubjects(subjects);
+            updateDashboard();
+        }
+    });
+
+    list.querySelectorAll('.btn-delete-subject').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = parseInt(e.currentTarget.dataset.id);
+            const sub = subjects.find(s => s.id === id);
+            if (sub && confirm(`Delete "${sub.name}"?`)) {
+                subjects = subjects.filter(s => s.id !== id);
+                saveSubjects(subjects);
+                renderAttendance();
+                renderOverallRisk();
+                showToast(`🗑️ "${sub.name}" removed`);
+            }
+        });
+    });
+
+    list.querySelectorAll('.btn-edit-subject').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = parseInt(e.currentTarget.dataset.id);
+            const sub = subjects.find(s => s.id === id);
+            if (!sub) return;
+
+            const card = e.currentTarget.closest('.attendance-item');
+            card.innerHTML = `
+                <h4>✏️ Edit Subject</h4>
+                <div class="subject-form-fields">
+                    <input id="edit-name-${id}" type="text" value="${sub.name}" class="subject-input" maxlength="50" />
+                    <div class="subject-form-row">
+                        <div class="subject-form-group">
+                            <label>Classes Attended</label>
+                            <input id="edit-attended-${id}" type="number" min="0" max="999" value="${sub.attended}" class="subject-input-small" />
+                        </div>
+                        <div class="subject-form-group">
+                            <label>Total Classes Held</label>
+                            <input id="edit-total-${id}" type="number" min="1" max="999" value="${sub.total}" class="subject-input-small" />
+                        </div>
+                    </div>
+                </div>
+                <div class="subject-form-actions">
+                    <button id="save-edit-${id}" class="btn-save-subject">✓ Save Changes</button>
+                    <button id="cancel-edit-${id}" class="btn-cancel-subject">✕ Cancel</button>
+                </div>
+            `;
+
+            document.getElementById(`save-edit-${id}`).addEventListener('click', () => {
+                const name = document.getElementById(`edit-name-${id}`).value.trim();
+                const attended = parseInt(document.getElementById(`edit-attended-${id}`).value);
+                const total = parseInt(document.getElementById(`edit-total-${id}`).value);
+
+                if (!name || isNaN(attended) || isNaN(total) || attended > total || total < 1) {
+                    alert('Please enter valid values');
+                    return;
+                }
+
+                const idx = subjects.findIndex(s => s.id === id);
+                subjects[idx] = { ...subjects[idx], name, attended, total };
+                saveSubjects(subjects);
+                renderAttendance();
+                renderOverallRisk();
+                showToast(`✅ "${name}" updated!`);
+            });
+
+            document.getElementById(`cancel-edit-${id}`).addEventListener('click', () => renderAttendance());
+        });
+    });
 }
 
 function renderAssignments() {
@@ -517,6 +620,94 @@ function generateFallbackPlan() {
     `;
 }
 
+function showAddSubjectForm() {
+    if (document.getElementById('add-subject-form')) return;
+
+    const form = document.createElement('div');
+    form.id = 'add-subject-form';
+    form.className = 'subject-form-card';
+    form.innerHTML = `
+        <h4>➕ New Subject</h4>
+        <div class="subject-form-fields">
+            <input id="new-subject-name" type="text" placeholder="Subject name (e.g. Operating Systems)" class="subject-input" maxlength="50" autocomplete="off" />
+            <div class="subject-form-row">
+                <div class="subject-form-group">
+                    <label>Classes Attended</label>
+                    <input id="new-subject-attended" type="number" min="0" max="999" placeholder="e.g. 28" class="subject-input-small" />
+                </div>
+                <div class="subject-form-group">
+                    <label>Total Classes Held</label>
+                    <input id="new-subject-total" type="number" min="1" max="999" placeholder="e.g. 35" class="subject-input-small" />
+                </div>
+            </div>
+            <div class="subject-form-preview" id="attendance-preview"></div>
+        </div>
+        <div class="subject-form-actions">
+            <button id="save-subject-btn" class="btn-save-subject">✓ Add Subject</button>
+            <button id="cancel-subject-btn" class="btn-cancel-subject">✕ Cancel</button>
+        </div>
+    `;
+
+    const list = document.getElementById('attendance-list');
+    list.insertBefore(form, list.firstChild);
+
+    const attendedInput = document.getElementById('new-subject-attended');
+    const totalInput = document.getElementById('new-subject-total');
+    const preview = document.getElementById('attendance-preview');
+
+    function updatePreview() {
+        const a = parseInt(attendedInput.value);
+        const t = parseInt(totalInput.value);
+        if (a >= 0 && t > 0 && a <= t) {
+            const pct = Math.round((a / t) * 100);
+            const status = pct >= 80 ? '✅ Safe' : pct >= 75 ? '⚠️ Warning' : '🔴 Critical';
+            const color = pct >= 80 ? 'var(--accent-success)' : pct >= 75 ? 'var(--accent-warning)' : 'var(--accent-danger)';
+            preview.innerHTML = `<span style="color:${color}; font-weight:600;">${pct}% — ${status}</span>`;
+        } else {
+            preview.innerHTML = '';
+        }
+    }
+
+    attendedInput.addEventListener('input', updatePreview);
+    totalInput.addEventListener('input', updatePreview);
+    document.getElementById('new-subject-name').focus();
+
+    document.getElementById('save-subject-btn').addEventListener('click', () => {
+        const name = document.getElementById('new-subject-name').value.trim();
+        const attended = parseInt(attendedInput.value);
+        const total = parseInt(totalInput.value);
+
+        if (!name) return showFormError('Please enter a subject name');
+        if (isNaN(attended) || attended < 0) return showFormError('Enter valid attended classes');
+        if (isNaN(total) || total < 1) return showFormError('Enter valid total classes');
+        if (attended > total) return showFormError('Attended cannot exceed total classes');
+        if (subjects.find(s => s.name.toLowerCase() === name.toLowerCase())) {
+            return showFormError('Subject already exists');
+        }
+
+        const newSubject = { id: Date.now(), name, attended, total };
+        subjects.push(newSubject);
+        saveSubjects(subjects);
+        renderAttendance();
+        renderOverallRisk();
+        showToast(`✅ "${name}" added successfully!`);
+    });
+
+    document.getElementById('cancel-subject-btn').addEventListener('click', () => form.remove());
+}
+
+function showFormError(msg) {
+    let err = document.getElementById('form-error');
+    if (!err) {
+        err = document.createElement('p');
+        err.id = 'form-error';
+        err.className = 'form-error-msg';
+        document.getElementById('add-subject-form').appendChild(err);
+    }
+    err.textContent = '⚠️ ' + msg;
+    setTimeout(() => err?.remove(), 3000);
+}
+
 async function generateStudyPlan() {
     const btn = document.getElementById('generate-plan-btn');
     const loading = document.getElementById('ai-loading');
@@ -667,12 +858,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     updateDashboard();
 
+    // Subject CRUD listeners
+    const addBtn = document.getElementById('add-subject-btn');
+    if (addBtn) addBtn.addEventListener('click', showAddSubjectForm);
+
     const resetBtn = document.getElementById('reset-simulation');
     if (resetBtn) {
         resetBtn.addEventListener('click', () => {
-            subjects = JSON.parse(JSON.stringify(INITIAL_DATA.subjects));
-            window.confettiFired = false;
-            updateDashboard();
+            if (confirm('Reset all subjects to default? This will clear your custom subjects.')) {
+                subjects = JSON.parse(JSON.stringify(DEFAULT_SUBJECTS));
+                saveSubjects(subjects);
+                window.confettiFired = false;
+                updateDashboard();
+                showToast('🔄 Simulation reset to default data');
+            }
         });
     }
 
